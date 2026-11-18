@@ -121,7 +121,8 @@ textarea:focus{background:var(--accent-soft)}
 
 <div class="sheet" id="sheet" role="dialog" aria-label="보내기">
   <div class="grip"></div>
-  <h2>카톡으로 보내기</h2>
+  <h2>보내기</h2>
+  <button class="row" id="uploadAll" hidden><div class="ic">🚀</div><div><b id="uploadLabel">바로 보내기</b><span id="uploadSub">사진과 메모가 한 번에 전달돼요 · 저장 안 해도 돼요</span></div></button>
   <button class="row" id="shareAll" hidden><div class="ic">💬</div><div><b id="shareLabel">사진 보내기</b><span id="shareSub"></span></div></button>
   <button class="row" id="saveAll"><div class="ic">⬇️</div><div><b>사진 전부 폰에 저장하기</b><span>사진 아래에 번호와 메모가 같이 찍혀요</span></div></button>
   <button class="row" id="copyAll"><div class="ic">📋</div><div><b>메모만 복사하기</b><span>번호별로 정리돼서 카톡에 붙여 넣으면 돼요</span></div></button>
@@ -510,6 +511,47 @@ textarea:focus{background:var(--accent-soft)}
     } catch (err) {
       if (err && err.name !== 'AbortError') toast('보내지 못했어요 · «사진 전부 폰에 저장하기»로 저장한 뒤 갤러리에서 보내 주세요', 3600);
     }
+  });
+
+  // ---------- 바로 보내기 (임시 받는 곳이 열려 있을 때만 보인다) ----------
+  const UPLOAD = 'https://uniambic-chummiest-jay.ngrok-free.dev/cc329e6e9d4debb3bf';
+  const sentPids = new Set();
+  let uploading = false;
+  if (UPLOAD) $('uploadAll').hidden = false;
+  const send = async (blob, name) => {
+    for (let t = 0; t < 3; t++) {
+      try {
+        const r = await fetch(`${UPLOAD}/file?name=${encodeURIComponent(name)}`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: blob });
+        if (r.ok) return;
+      } catch {}
+      await new Promise(r => setTimeout(r, 1500));
+    }
+    throw new Error('upload');
+  };
+  $('uploadAll').addEventListener('click', async () => {
+    if (uploading) return;
+    uploading = true;
+    const all = [];
+    for (const it of ordered()) it.photos.forEach((p, k) => all.push({ it, k, p }));
+    let done = 0;
+    try {
+      for (const { it, k, p } of all) {
+        if (!sentPids.has(p.pid)) {
+          $('uploadLabel').textContent = `보내는 중 ${done + 1}/${all.length}`;
+          await send(jpeg(p.full), fileName(it, k));
+          sentPids.add(p.pid);
+        }
+        done++;
+      }
+      await send(new Blob(['﻿' + memoText()], { type: 'text/plain' }), '메모.txt');
+      $('uploadLabel').textContent = '다 보냈어요';
+      $('uploadSub').textContent = `사진 ${all.length}장과 메모를 보냈어요`;
+      toast(`사진 ${all.length}장과 메모를 다 보냈어요`, 3000);
+    } catch {
+      $('uploadLabel').textContent = '이어서 보내기';
+      $('uploadSub').textContent = `${done}장까지 보냈어요 · 인터넷을 확인하고 다시 눌러 주세요`;
+      toast('보내지 못했어요 · 다시 누르면 이어서 보내요', 3000);
+    } finally { uploading = false; }
   });
 
   $('wipe').addEventListener('click', async () => {
