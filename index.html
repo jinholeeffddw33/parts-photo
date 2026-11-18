@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#16161a">
+<title>부품 사진 메모</title>
+<style>
+:root{
+  --bg:#f3f3f1;--card:#ffffff;--ink:#16161a;--sub:#6e6e76;--line:#e4e4e0;
+  --accent:#ff5a1f;--accent-ink:#ffffff;--danger:#e5484d;--ok:#1f9d55;--shade:rgba(0,0,0,.55);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#0e0e10;--card:#1a1a1e;--ink:#f2f2f3;--sub:#9c9ca5;--line:#2a2a30;--shade:rgba(0,0,0,.7)}
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Malgun Gothic",sans-serif;
+  font-size:16px;line-height:1.45}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+header{position:sticky;top:0;z-index:5;background:var(--bg);
+  padding:calc(env(safe-area-inset-top) + 14px) 16px 10px;display:flex;align-items:center;gap:10px}
+header h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.3px;flex:1;white-space:nowrap}
+header h1 small{font-size:15px;font-weight:600;color:var(--sub);margin-left:6px}
+.btn-ghost{padding:9px 14px;border-radius:999px;background:var(--card);font-size:15px;font-weight:700;
+  box-shadow:0 1px 0 var(--line) inset,0 0 0 1px var(--line)}
+
+main{padding:4px 16px calc(120px + env(safe-area-inset-bottom))}
+.empty{margin-top:12vh;text-align:center;color:var(--sub)}
+.empty .big{font-size:56px;line-height:1}
+.empty p{margin:14px 0 4px;font-size:17px;font-weight:700;color:var(--ink)}
+.empty span{font-size:14px}
+
+.card{display:flex;gap:12px;background:var(--card);border-radius:16px;padding:10px;margin-bottom:10px;
+  box-shadow:0 0 0 1px var(--line);transition:box-shadow .6s}
+.card.new{box-shadow:0 0 0 2px var(--accent)}
+.thumb{position:relative;flex:none;width:112px;height:112px;border-radius:12px;overflow:hidden;background:var(--line)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.num{position:absolute;left:6px;top:6px;min-width:26px;height:26px;padding:0 7px;border-radius:999px;
+  background:rgba(0,0,0,.7);color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.body{flex:1;min-width:0;display:flex;flex-direction:column}
+textarea{width:100%;flex:1 0 auto;min-height:76px;resize:none;border:0;outline:0;background:transparent;color:var(--ink);
+  font:inherit;font-size:16px;padding:2px 2px;border-radius:8px}
+textarea::placeholder{color:var(--sub)}
+textarea:focus{background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.meta{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--sub);white-space:nowrap}
+.meta .saved{color:var(--ok);font-weight:700;opacity:0;transition:opacity .2s}
+.meta .saved.on{opacity:1}
+.meta .del{margin-left:auto;padding:6px 4px;color:var(--sub);font-size:13px}
+
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;gap:10px;
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  background:linear-gradient(to top,var(--bg) 70%,transparent)}
+.shoot{flex:1;height:60px;border-radius:18px;background:var(--accent);color:var(--accent-ink);
+  font-size:19px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px;
+  box-shadow:0 6px 18px rgba(255,90,31,.35)}
+.shoot:active{transform:scale(.98)}
+.shoot svg{display:block}
+
+.overlay{position:fixed;inset:0;z-index:20;background:var(--shade);display:none}
+.overlay.on{display:block}
+.viewer{background:#000;display:none;flex-direction:column}
+.viewer.on{display:flex}
+.viewer .top{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 10px) 12px 8px;color:#fff}
+.viewer .top b{flex:1;font-size:17px}
+.viewer .top button{color:#fff;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.14);font-weight:700;font-size:15px}
+.viewer .pic{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.viewer .pic img{max-width:100%;max-height:100%;object-fit:contain}
+.viewer .memo{color:#eee;padding:12px 16px calc(16px + env(safe-area-inset-bottom));white-space:pre-wrap;font-size:16px;max-height:30vh;overflow:auto}
+
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--card);border-radius:20px 20px 0 0;
+  padding:8px 12px calc(14px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .22s ease}
+.sheet.on{transform:none}
+.sheet .grip{width:40px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 10px}
+.sheet h2{margin:0 6px 8px;font-size:18px}
+.row{display:flex;width:100%;text-align:left;align-items:center;gap:12px;padding:12px 8px;border-radius:12px}
+.row:active{background:var(--bg)}
+.row .ic{flex:none;width:40px;height:40px;border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:20px}
+.row b{display:block;font-size:16px}
+.row span{display:block;font-size:13px;color:var(--sub)}
+.row.danger b{color:var(--danger)}
+
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));z-index:30;transform:translate(-50%,20px);
+  background:rgba(22,22,26,.92);color:#fff;padding:11px 16px;border-radius:12px;font-size:15px;font-weight:600;
+  opacity:0;pointer-events:none;transition:all .2s;white-space:nowrap;max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+.kakao{position:fixed;inset:0;z-index:40;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;text-align:center}
+.kakao.on{display:flex}
+.kakao p{font-size:18px;font-weight:800;margin:0 0 6px}
+.kakao span{color:var(--sub);font-size:15px}
+.kakao button{margin-top:22px;padding:12px 18px;border-radius:12px;background:var(--card);box-shadow:0 0 0 1px var(--line);font-weight:700}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>부품 사진<small id="count"></small></h1>
+  <button class="btn-ghost" id="openSheet">보내기</button>
+</header>
+
+<main id="list"></main>
+
+<div class="bar">
+  <label class="shoot">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3.5"/></svg>
+    사진 찍기
+    <input class="vh" id="pickCamera" type="file" accept="image/*" capture="environment">
+  </label>
+</div>
+
+<div class="overlay" id="shade"></div>
+
+<div class="sheet" id="sheet" role="dialog" aria-label="보내기">
+  <div class="grip"></div>
+  <h2>카톡으로 보내기</h2>
+  <button class="row" id="shareAll" hidden><div class="ic">💬</div><div><b id="shareLabel">사진 보내기</b><span id="shareSub">사진 아래에 번호와 메모가 같이 찍혀서 가요</span></div></button>
+  <button class="row" id="saveAll"><div class="ic">⬇️</div><div><b>사진 전부 폰에 저장하기</b><span>사진 아래에 번호와 메모가 같이 찍혀요</span></div></button>
+  <button class="row" id="copyAll"><div class="ic">📋</div><div><b>메모만 복사하기</b><span>번호별로 정리돼서 카톡에 붙여 넣으면 돼요</span></div></button>
+  <button class="row danger" id="wipe"><div class="ic">🗑️</div><div><b>전부 지우기</b><span>사진과 메모가 이 폰에서 모두 사라져요</span></div></button>
+</div>
+
+<div class="overlay viewer" id="viewer">
+  <div class="top"><b id="vTitle"></b><button id="vSave">저장하기</button><button id="vClose">닫기</button></div>
+  <div class="pic" id="vPic"><img id="vImg" alt=""></div>
+  <div class="memo" id="vMemo"></div>
+</div>
+
+<div class="kakao" id="kakao">
+  <p>크롬(사파리)에서 열고 있어요</p>
+  <span>카톡 안에서는 사진이 지워지거나<br>폰에 저장이 안 될 수 있어서요</span>
+  <button id="stayKakao">카톡 안에서 계속 쓰기</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  // ---------- 저장소 (IndexedDB · 사진은 ArrayBuffer 로 — 옛 iOS 웹뷰의 Blob 저장 오류 회피) ----------
+  const DB_NAME = 'parts-photo', STORE = 'items';
+  let db, items = [];
+
+  const openDB = () => new Promise((res, rej) => {
+    const r = indexedDB.open(DB_NAME, 1);
+    r.onupgradeneeded = () => r.result.createObjectStore(STORE, { keyPath: 'id' });
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  const run = (mode, fn) => new Promise((res, rej) => {
+    const t = db.transaction(STORE, mode);
+    const r = fn(t.objectStore(STORE));
+    t.oncomplete = () => res(r && r.result);
+    t.onerror = () => rej(t.error);
+    t.onabort = () => rej(t.error);
+  });
+  const getAll = () => run('readonly', s => s.getAll());
+  const put = it => run('readwrite', s => s.put({ id: it.id, n: it.n, memo: it.memo, createdAt: it.createdAt, full: it.full, thumb: it.thumb }));
+  const remove = id => run('readwrite', s => s.delete(id));
+  const clearAll = () => run('readwrite', s => s.clear());
+
+  // ---------- 화면 요소 ----------
+  const $ = id => document.getElementById(id);
+  const list = $('list'), count = $('count'), toastEl = $('toast');
+  let toastT;
+  const toast = (msg, ms = 1800) => {
+    toastEl.textContent = msg; toastEl.classList.add('on');
+    clearTimeout(toastT); if (ms) toastT = setTimeout(() => toastEl.classList.remove('on'), ms);
+  };
+
+  const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+  const jpeg = ab => new Blob([ab], { type: 'image/jpeg' });
+  const pad = n => String(n).padStart(2, '0');
+  const when = t => { const d = new Date(t); return `${d.getMonth() + 1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+  const fileName = it => {
+    const head = (it.memo || '').split('\n')[0].replace(/[\\/:*?"<>|\s]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 24);
+    return `${pad(it.n)}${head ? '_' + head : ''}.jpg`;
+  };
+
+  // ---------- 사진 줄이기 (긴 변 1600px · 썸네일 360px) ----------
+  const loadImg = file => new Promise((res, rej) => {
+    const u = URL.createObjectURL(file), im = new Image();
+    im.onload = () => { URL.revokeObjectURL(u); res(im); };
+    im.onerror = () => { URL.revokeObjectURL(u); rej(new Error('decode')); };
+    im.src = u;
+  });
+  const shrink = (im, max, q) => {
+    const w0 = im.naturalWidth, h0 = im.naturalHeight, s = Math.min(1, max / Math.max(w0, h0));
+    const c = document.createElement('canvas');
+    c.width = Math.round(w0 * s); c.height = Math.round(h0 * s);
+    c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+    return new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('encode')), 'image/jpeg', q));
+  };
+
+  // ---------- 그리기 ----------
+  const renderCount = () => { count.textContent = items.length ? `${items.length}개` : ''; };
+
+  const renderEmpty = () => {
+    if (items.length) return;
+    list.innerHTML = `<div class="empty"><div class="big">📷</div><p>아래 «사진 찍기»를 눌러 시작하세요</p><span>사진마다 메모를 적고, 다 찍으면<br>오른쪽 위 «보내기»로 카톡에 보내면 돼요</span></div>`;
+  };
+
+  const cardFor = it => {
+    const el = document.createElement('article');
+    el.className = 'card'; el.dataset.id = it.id;
+    it.thumbUrl = it.thumbUrl || URL.createObjectURL(jpeg(it.thumb));
+    el.innerHTML = `
+      <button class="thumb" aria-label="${it.n}번 사진 크게 보기"><img alt="" src="${it.thumbUrl}"><span class="num">${it.n}</span></button>
+      <div class="body">
+        <textarea rows="3" placeholder="부품 이름 · 가격 · 상태"></textarea>
+        <div class="meta"><span>${when(it.createdAt)}</span><span class="saved">저장됐어요</span><button class="del">지우기</button></div>
+      </div>`;
+    const ta = el.querySelector('textarea'), saved = el.querySelector('.saved');
+    ta.value = it.memo || '';
+    const fit = () => { ta.style.height = 'auto'; ta.style.height = Math.max(76, ta.scrollHeight) + 'px'; };
+    let t;
+    ta.addEventListener('input', () => {
+      fit(); it.memo = ta.value; saved.classList.remove('on');
+      clearTimeout(t);
+      t = setTimeout(async () => {
+        try { await put(it); saved.classList.add('on'); setTimeout(() => saved.classList.remove('on'), 1400); }
+        catch { toast('메모를 저장하지 못했어요. 다시 입력해 주세요'); }
+      }, 350);
+    });
+    requestAnimationFrame(fit);
+    el.querySelector('.thumb').addEventListener('click', () => openViewer(it));
+    el.querySelector('.del').addEventListener('click', async () => {
+      if (!confirm(`${it.n}번 사진과 메모를 지울까요?\n지우면 되돌릴 수 없어요.`)) return;
+      await remove(it.id);
+      URL.revokeObjectURL(it.thumbUrl);
+      capCache.delete(it.id);
+      items = items.filter(x => x.id !== it.id);
+      el.remove(); renderCount(); renderEmpty();
+    });
+    return el;
+  };
+
+  const renderAll = () => {
+    list.innerHTML = '';
+    [...items].sort((a, b) => b.n - a.n).forEach(it => list.appendChild(cardFor(it)));
+    renderCount(); renderEmpty();
+  };
+
+  // ---------- 사진 추가 ----------
+  const nextN = () => items.reduce((m, x) => Math.max(m, x.n), 0) + 1;
+
+  const addFiles = async files => {
+    files = [...files].filter(f => f.type.startsWith('image/') || !f.type);
+    if (!files.length) return;
+    if (!items.length) list.innerHTML = '';
+    let ok = 0;
+    for (let i = 0; i < files.length; i++) {
+      toast(files.length > 1 ? `사진 저장하는 중 ${i + 1}/${files.length}` : '사진 저장하는 중', 0);
+      try {
+        const im = await loadImg(files[i]);
+        const [full, thumb] = await Promise.all([shrink(im, 1600, .86), shrink(im, 360, .8)]);
+        const it = { id: uid(), n: nextN(), memo: '', createdAt: Date.now(), full: await full.arrayBuffer(), thumb: await thumb.arrayBuffer() };
+        await put(it);
+        items.push(it);
+        const el = cardFor(it);
+        list.prepend(el);
+        el.classList.add('new'); setTimeout(() => el.classList.remove('new'), 1600);
+        ok++;
+      } catch (e) {
+        console.error(e);
+        toast('사진을 저장하지 못했어요. 다시 찍어 주세요', 2600);
+      }
+    }
+    renderCount(); renderEmpty();
+    if (ok) { toast(`${items.length}번째 사진까지 저장했어요`); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  };
+
+  $('pickCamera').addEventListener('change', e => { addFiles(e.target.files); e.target.value = ''; });
+
+  // ---------- 크게 보기 ----------
+  let vItem, vUrl;
+  const openViewer = it => {
+    vItem = it; vUrl = URL.createObjectURL(jpeg(it.full));
+    $('vImg').src = vUrl; $('vTitle').textContent = `${it.n}번`;
+    $('vMemo').textContent = it.memo || '';
+    $('viewer').classList.add('on');
+    history.pushState({ v: 1 }, '');
+  };
+  const closeViewer = (fromPop) => {
+    if (!$('viewer').classList.contains('on')) return;
+    $('viewer').classList.remove('on'); $('vImg').removeAttribute('src');
+    if (vUrl) URL.revokeObjectURL(vUrl); vUrl = null;
+    if (!fromPop) history.back();
+  };
+  $('vClose').addEventListener('click', () => closeViewer(false));
+  $('vPic').addEventListener('click', () => closeViewer(false));
+  $('vSave').addEventListener('click', async () => { download(await getCaptioned(vItem), fileName(vItem)); toast('사진을 저장했어요'); });
+
+  // ---------- 사진 아래에 번호·메모 새기기 (받는 사람이 사진만 봐도 무슨 부품인지 알게) ----------
+  const capCache = new Map(); // id -> { memo, blob }
+  const wrap = (ctx, text, max) => {
+    const out = [];
+    const fits = s => ctx.measureText(s).width <= max;
+    for (const para of text.split('\n')) {
+      let line = '';
+      for (const word of para.split(/\s+/).filter(Boolean)) {
+        const next = line ? line + ' ' + word : word;
+        if (fits(next)) { line = next; continue; }
+        if (line) out.push(line);
+        line = '';
+        // 한 단어가 한 줄보다 길 때만 글자 단위로 자른다
+        for (const ch of word) {
+          if (line && !fits(line + ch)) { out.push(line); line = ch; } else line += ch;
+        }
+      }
+      out.push(line);
+    }
+    return out;
+  };
+  const captioned = async it => {
+    const im = await loadImg(jpeg(it.full));
+    const W = im.naturalWidth, H = im.naturalHeight;
+    const fs = Math.max(22, Math.round(W * 0.042)), pad = Math.round(fs * 0.8), lh = Math.round(fs * 1.4);
+    const font = w => `${w} ${fs}px -apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif`;
+    const c = document.createElement('canvas'), ctx = c.getContext('2d');
+    ctx.font = font('500');
+    const memo = (it.memo || '').trim();
+    const lines = memo ? wrap(ctx, memo, W - pad * 2).slice(0, 10) : [];
+    const textH = lh * (1 + lines.length);
+    c.width = W; c.height = H + pad * 2 + textH;
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height);
+    ctx.drawImage(im, 0, 0, W, H);
+    ctx.textBaseline = 'top'; ctx.fillStyle = '#16161a';
+    let y = H + pad + Math.round((lh - fs) / 2);
+    ctx.font = font('800'); ctx.fillText(`${it.n}번`, pad, y); y += lh;
+    ctx.font = font('500'); lines.forEach(l => { ctx.fillText(l, pad, y); y += lh; });
+    return new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('encode')), 'image/jpeg', .88));
+  };
+  const getCaptioned = async it => {
+    const c = capCache.get(it.id);
+    if (c && c.memo === it.memo) return c.blob;
+    const blob = await captioned(it);
+    capCache.set(it.id, { memo: it.memo, blob });
+    return blob;
+  };
+
+  // ---------- 내보내기 시트 ----------
+  const sheet = $('sheet'), shade = $('shade');
+  const openSheet = () => { sheet.classList.add('on'); shade.classList.add('on'); history.pushState({ s: 1 }, ''); };
+  const closeSheet = (fromPop) => {
+    if (!sheet.classList.contains('on')) return;
+    sheet.classList.remove('on'); shade.classList.remove('on');
+    if (!fromPop) history.back();
+  };
+  // 공유는 «누른 직후» 에만 허락돼서, 시트를 열 때 미리 만들어 둔다
+  const BATCH = 20;
+  let prepared = null, step = 0;
+  const prepare = () => (prepared = (async () => {
+    const out = [];
+    for (const it of ordered()) out.push(new File([await getCaptioned(it)], fileName(it), { type: 'image/jpeg' }));
+    return out;
+  })());
+  // 보내는 순서: 사진 20장씩 → 마지막에 번호별 메모 글
+  const steps = () => {
+    const s = [];
+    for (let i = 0; i < items.length; i += BATCH) s.push({ from: i, to: Math.min(items.length, i + BATCH) });
+    s.push({ text: true });
+    return s;
+  };
+  const curStep = () => { const s = steps(); if (step >= s.length) step = 0; return [s[step], s.length]; };
+  const updateShareLabel = (busy) => {
+    const [st, n] = curStep();
+    const label = busy ? '보낼 사진 만드는 중…'
+      : st.text ? '메모 글 보내기'
+      : items.length > BATCH ? `사진 보내기 (${st.from + 1}~${st.to}번)` : '사진 보내기';
+    $('shareLabel').textContent = n > 2 && !busy ? `${step + 1}/${n} ${label}` : label;
+    $('shareSub').textContent = st.text
+      ? '번호별 메모를 글로 보내요 · 마지막 단계예요'
+      : '보내고 나면 다음 차례가 여기 이어서 떠요';
+    $('shareAll').disabled = !!busy; $('shareAll').style.opacity = busy ? .5 : 1;
+  };
+  $('openSheet').addEventListener('click', async () => {
+    if (!items.length) return toast('먼저 사진을 찍어 주세요');
+    openSheet();
+    updateShareLabel(true);
+    try { await prepare(); } catch (e) { console.error(e); }
+    updateShareLabel(false);
+  });
+  shade.addEventListener('click', () => closeSheet(false));
+  window.addEventListener('popstate', () => { closeViewer(true); closeSheet(true); });
+
+  const download = (blob, name) => {
+    const a = document.createElement('a'), u = URL.createObjectURL(blob);
+    a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(u), 4000);
+  };
+  const ordered = () => [...items].sort((a, b) => a.n - b.n);
+
+  $('saveAll').addEventListener('click', async () => {
+    closeSheet(false);
+    toast('사진 만드는 중', 0);
+    const files = await (prepared || prepare());
+    for (let i = 0; i < files.length; i++) {
+      toast(`사진 저장하는 중 ${i + 1}/${files.length}`, 0);
+      download(files[i], files[i].name);
+      await new Promise(r => setTimeout(r, 450));
+    }
+    toast(`사진 ${files.length}장을 저장했어요 · 갤러리에서 보낼 수 있어요`, 3200);
+  });
+
+  const memoText = () => ordered().map(it => `${it.n}. ${(it.memo || '(메모 없음)').trim()}`).join('\n\n');
+  $('copyAll').addEventListener('click', async () => {
+    const text = memoText();
+    try { await navigator.clipboard.writeText(text); }
+    catch {
+      const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    }
+    closeSheet(false);
+    toast(`메모 ${items.length}개를 복사했어요`);
+  });
+
+  const canShareFiles = (() => {
+    try { return !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob(['x'])], 'a.jpg', { type: 'image/jpeg' })] })); }
+    catch { return false; }
+  })();
+  if (canShareFiles) $('shareAll').hidden = false;
+  $('shareAll').addEventListener('click', async () => {
+    const all = await prepared;
+    const [st, n] = curStep();
+    try {
+      if (st.text) await navigator.share({ text: memoText() });
+      else await navigator.share({ files: all.slice(st.from, st.to) });
+      step++;
+      if (step < n) {
+        updateShareLabel(false);
+        toast(st.text ? '메모 글을 보냈어요' : `${st.from + 1}~${st.to}번 사진을 보냈어요 · 다음 차례를 눌러 주세요`, 3200);
+      } else {
+        step = 0; closeSheet(false);
+        toast(`사진 ${items.length}장과 메모를 다 보냈어요`, 2800);
+      }
+    } catch (err) {
+      if (err && err.name !== 'AbortError') toast('보내지 못했어요 · «사진 전부 폰에 저장하기»로 저장한 뒤 갤러리에서 보내 주세요', 3600);
+    }
+  });
+
+  $('wipe').addEventListener('click', async () => {
+    if (!confirm(`사진 ${items.length}장과 메모가 이 폰에서 모두 사라져요.\n전부 지울까요?`)) return;
+    await clearAll();
+    items.forEach(it => it.thumbUrl && URL.revokeObjectURL(it.thumbUrl));
+    capCache.clear(); prepared = null; step = 0;
+    items = []; closeSheet(false); renderAll(); toast('전부 지웠어요');
+  });
+
+  // ---------- 시작 ----------
+  (async () => {
+    try {
+      db = await openDB();
+      items = await getAll();
+    } catch (e) {
+      console.error(e);
+      list.innerHTML = `<div class="empty"><div class="big">⚠️</div><p>이 브라우저에서는 저장할 수 없어요</p><span>크롬이나 사파리로 열어 주세요</span></div>`;
+      return;
+    }
+    renderAll();
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+
+    // 카톡 안 브라우저는 저장이 불안정 → 아직 저장한 게 없을 때만 폰 기본 브라우저로 넘긴다
+    const inKakao = /KAKAOTALK/i.test(navigator.userAgent);
+    let stay = false; try { stay = sessionStorage.getItem('stayKakao') === '1'; } catch {}
+    if (inKakao && !items.length && !stay && /^https?:/.test(location.protocol)) {
+      $('kakao').classList.add('on');
+      location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(location.href);
+    }
+    $('stayKakao').addEventListener('click', () => {
+      try { sessionStorage.setItem('stayKakao', '1'); } catch {}
+      $('kakao').classList.remove('on');
+    });
+  })();
+})();
+</script>
+</body>
+</html>
