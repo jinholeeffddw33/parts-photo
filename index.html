@@ -8,10 +8,10 @@
 <style>
 :root{
   --bg:#f3f3f1;--card:#ffffff;--ink:#16161a;--sub:#6e6e76;--line:#e4e4e0;
-  --accent:#ff5a1f;--accent-ink:#ffffff;--danger:#e5484d;--ok:#1f9d55;--shade:rgba(0,0,0,.55);
+  --accent:#ff5a1f;--accent-soft:rgba(255,90,31,.13);--accent-ink:#ffffff;--danger:#e5484d;--ok:#1f9d55;--shade:rgba(0,0,0,.55);
 }
 @media (prefers-color-scheme:dark){
-  :root{--bg:#0e0e10;--card:#1a1a1e;--ink:#f2f2f3;--sub:#9c9ca5;--line:#2a2a30;--shade:rgba(0,0,0,.7)}
+  :root{--bg:#0e0e10;--card:#1a1a1e;--ink:#f2f2f3;--sub:#9c9ca5;--line:#2a2a30;--accent-soft:rgba(255,90,31,.2);--shade:rgba(0,0,0,.7)}
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--ink);
@@ -25,12 +25,12 @@ header{position:sticky;top:0;z-index:5;background:var(--bg);
 header h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.3px;flex:1;white-space:nowrap}
 header h1 small{font-size:15px;font-weight:600;color:var(--sub);margin-left:6px}
 .btn-ghost{padding:9px 14px;border-radius:999px;background:var(--card);font-size:15px;font-weight:700;
-  box-shadow:0 1px 0 var(--line) inset,0 0 0 1px var(--line)}
+  box-shadow:0 0 0 1px var(--line)}
 
 main{padding:4px 16px calc(120px + env(safe-area-inset-bottom))}
 .empty{margin-top:12vh;text-align:center;color:var(--sub)}
 .empty .big{font-size:56px;line-height:1}
-.empty p{margin:14px 0 4px;font-size:17px;font-weight:700;color:var(--ink)}
+.empty p{margin:14px 0 6px;font-size:17px;font-weight:700;color:var(--ink)}
 .empty span{font-size:14px}
 
 .card{display:flex;gap:12px;background:var(--card);border-radius:16px;padding:10px;margin-bottom:10px;
@@ -40,17 +40,19 @@ main{padding:4px 16px calc(120px + env(safe-area-inset-bottom))}
 .thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .num{position:absolute;left:6px;top:6px;min-width:26px;height:26px;padding:0 7px;border-radius:999px;
   background:rgba(0,0,0,.7);color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.cnt{position:absolute;right:6px;bottom:6px;padding:1px 8px;border-radius:999px;background:rgba(0,0,0,.7);color:#fff;font-size:13px;font-weight:700}
 .body{flex:1;min-width:0;display:flex;flex-direction:column}
 textarea{width:100%;flex:1 0 auto;min-height:76px;resize:none;border:0;outline:0;background:transparent;color:var(--ink);
   font:inherit;font-size:16px;padding:2px 2px;border-radius:8px}
 textarea::placeholder{color:var(--sub)}
-textarea:focus{background:color-mix(in srgb,var(--accent) 7%,transparent)}
+textarea:focus{background:var(--accent-soft)}
 .meta{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--sub);white-space:nowrap}
+.meta .add{padding:6px 11px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:800}
 .meta .saved{color:var(--ok);font-weight:700;opacity:0;transition:opacity .2s}
 .meta .saved.on{opacity:1}
 .meta .del{margin-left:auto;padding:6px 4px;color:var(--sub);font-size:13px}
 
-.bar{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;gap:10px;
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;
   padding:12px 16px calc(12px + env(safe-area-inset-bottom));
   background:linear-gradient(to top,var(--bg) 70%,transparent)}
 .shoot{flex:1;height:60px;border-radius:18px;background:var(--accent);color:var(--accent-ink);
@@ -63,11 +65,13 @@ textarea:focus{background:color-mix(in srgb,var(--accent) 7%,transparent)}
 .overlay.on{display:block}
 .viewer{background:#000;display:none;flex-direction:column}
 .viewer.on{display:flex}
-.viewer .top{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 10px) 12px 8px;color:#fff}
+.viewer .top{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 10px) 12px 8px;color:#fff;white-space:nowrap}
 .viewer .top b{flex:1;font-size:17px}
 .viewer .top button{color:#fff;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.14);font-weight:700;font-size:15px}
-.viewer .pic{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
-.viewer .pic img{max-width:100%;max-height:100%;object-fit:contain}
+.viewer .pic{flex:1;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none}
+.viewer .pic::-webkit-scrollbar{display:none}
+.slide{flex:0 0 100%;scroll-snap-align:center;display:flex;align-items:center;justify-content:center}
+.slide img{max-width:100%;max-height:100%;object-fit:contain}
 .viewer .memo{color:#eee;padding:12px 16px calc(16px + env(safe-area-inset-bottom));white-space:pre-wrap;font-size:16px;max-height:30vh;overflow:auto}
 
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--card);border-radius:20px 20px 0 0;
@@ -107,9 +111,10 @@ textarea:focus{background:color-mix(in srgb,var(--accent) 7%,transparent)}
 <div class="bar">
   <label class="shoot">
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3.5"/></svg>
-    사진 찍기
+    새 부품 찍기
     <input class="vh" id="pickCamera" type="file" accept="image/*" capture="environment">
   </label>
+  <input class="vh" id="pickMore" type="file" accept="image/*" capture="environment">
 </div>
 
 <div class="overlay" id="shade"></div>
@@ -117,15 +122,15 @@ textarea:focus{background:color-mix(in srgb,var(--accent) 7%,transparent)}
 <div class="sheet" id="sheet" role="dialog" aria-label="보내기">
   <div class="grip"></div>
   <h2>카톡으로 보내기</h2>
-  <button class="row" id="shareAll" hidden><div class="ic">💬</div><div><b id="shareLabel">사진 보내기</b><span id="shareSub">사진 아래에 번호와 메모가 같이 찍혀서 가요</span></div></button>
+  <button class="row" id="shareAll" hidden><div class="ic">💬</div><div><b id="shareLabel">사진 보내기</b><span id="shareSub"></span></div></button>
   <button class="row" id="saveAll"><div class="ic">⬇️</div><div><b>사진 전부 폰에 저장하기</b><span>사진 아래에 번호와 메모가 같이 찍혀요</span></div></button>
   <button class="row" id="copyAll"><div class="ic">📋</div><div><b>메모만 복사하기</b><span>번호별로 정리돼서 카톡에 붙여 넣으면 돼요</span></div></button>
   <button class="row danger" id="wipe"><div class="ic">🗑️</div><div><b>전부 지우기</b><span>사진과 메모가 이 폰에서 모두 사라져요</span></div></button>
 </div>
 
 <div class="overlay viewer" id="viewer">
-  <div class="top"><b id="vTitle"></b><button id="vSave">저장하기</button><button id="vClose">닫기</button></div>
-  <div class="pic" id="vPic"><img id="vImg" alt=""></div>
+  <div class="top"><b id="vTitle"></b><button id="vDel" hidden>지우기</button><button id="vSave">저장하기</button><button id="vClose">닫기</button></div>
+  <div class="pic" id="vPic"></div>
   <div class="memo" id="vMemo"></div>
 </div>
 
@@ -140,6 +145,7 @@ textarea:focus{background:color-mix(in srgb,var(--accent) 7%,transparent)}
 <script>
 (() => {
   // ---------- 저장소 (IndexedDB · 사진은 ArrayBuffer 로 — 옛 iOS 웹뷰의 Blob 저장 오류 회피) ----------
+  // 품목 = { id, n, memo, createdAt, photos: [{ pid, full, thumb }] }
   const DB_NAME = 'parts-photo', STORE = 'items';
   let db, items = [];
 
@@ -157,11 +163,16 @@ textarea:focus{background:color-mix(in srgb,var(--accent) 7%,transparent)}
     t.onabort = () => rej(t.error);
   });
   const getAll = () => run('readonly', s => s.getAll());
-  const put = it => run('readwrite', s => s.put({ id: it.id, n: it.n, memo: it.memo, createdAt: it.createdAt, full: it.full, thumb: it.thumb }));
+  const put = it => run('readwrite', s => s.put({
+    id: it.id, n: it.n, memo: it.memo, createdAt: it.createdAt,
+    photos: it.photos.map(p => ({ pid: p.pid, full: p.full, thumb: p.thumb })),
+  }));
   const remove = id => run('readwrite', s => s.delete(id));
   const clearAll = () => run('readwrite', s => s.clear());
+  // 사진 한 장짜리 옛 저장 형식 → 여러 장 형식
+  const upgrade = x => x.photos ? x : { id: x.id, n: x.n, memo: x.memo, createdAt: x.createdAt, photos: [{ pid: x.id, full: x.full, thumb: x.thumb }] };
 
-  // ---------- 화면 요소 ----------
+  // ---------- 도움 함수 ----------
   const $ = id => document.getElementById(id);
   const list = $('list'), count = $('count'), toastEl = $('toast');
   let toastT;
@@ -169,19 +180,18 @@ textarea:focus{background:color-mix(in srgb,var(--accent) 7%,transparent)}
     toastEl.textContent = msg; toastEl.classList.add('on');
     clearTimeout(toastT); if (ms) toastT = setTimeout(() => toastEl.classList.remove('on'), ms);
   };
-
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
   const jpeg = ab => new Blob([ab], { type: 'image/jpeg' });
   const pad = n => String(n).padStart(2, '0');
-  const when = t => { const d = new Date(t); return `${d.getMonth() + 1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
-  const fileName = it => {
+  const ordered = () => [...items].sort((a, b) => a.n - b.n);
+  const fileName = (it, k) => {
     const head = (it.memo || '').split('\n')[0].replace(/[\\/:*?"<>|\s]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 24);
-    return `${pad(it.n)}${head ? '_' + head : ''}.jpg`;
+    return `${pad(it.n)}${it.photos.length > 1 ? '-' + (k + 1) : ''}${head ? '_' + head : ''}.jpg`;
   };
 
   // ---------- 사진 줄이기 (긴 변 1600px · 썸네일 360px) ----------
-  const loadImg = file => new Promise((res, rej) => {
-    const u = URL.createObjectURL(file), im = new Image();
+  const loadImg = blob => new Promise((res, rej) => {
+    const u = URL.createObjectURL(blob), im = new Image();
     im.onload = () => { URL.revokeObjectURL(u); res(im); };
     im.onerror = () => { URL.revokeObjectURL(u); rej(new Error('decode')); };
     im.src = u;
@@ -193,24 +203,30 @@ textarea:focus{background:color-mix(in srgb,var(--accent) 7%,transparent)}
     c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
     return new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('encode')), 'image/jpeg', q));
   };
+  const makePhoto = async file => {
+    const im = await loadImg(file);
+    const [full, thumb] = await Promise.all([shrink(im, 1600, .86), shrink(im, 360, .8)]);
+    return { pid: uid(), full: await full.arrayBuffer(), thumb: await thumb.arrayBuffer() };
+  };
 
   // ---------- 그리기 ----------
   const renderCount = () => { count.textContent = items.length ? `${items.length}개` : ''; };
-
   const renderEmpty = () => {
     if (items.length) return;
-    list.innerHTML = `<div class="empty"><div class="big">📷</div><p>아래 «사진 찍기»를 눌러 시작하세요</p><span>사진마다 메모를 적고, 다 찍으면<br>오른쪽 위 «보내기»로 카톡에 보내면 돼요</span></div>`;
+    list.innerHTML = `<div class="empty"><div class="big">📷</div><p>아래 «새 부품 찍기»를 눌러 시작하세요</p><span>같은 부품을 더 찍으려면 그 칸의 «+ 사진»<br>다 찍으면 오른쪽 위 «보내기»</span></div>`;
   };
 
   const cardFor = it => {
     const el = document.createElement('article');
     el.className = 'card'; el.dataset.id = it.id;
-    it.thumbUrl = it.thumbUrl || URL.createObjectURL(jpeg(it.thumb));
+    if (it.thumbUrl) URL.revokeObjectURL(it.thumbUrl);
+    it.thumbUrl = URL.createObjectURL(jpeg(it.photos[0].thumb));
+    const many = it.photos.length > 1;
     el.innerHTML = `
-      <button class="thumb" aria-label="${it.n}번 사진 크게 보기"><img alt="" src="${it.thumbUrl}"><span class="num">${it.n}</span></button>
+      <button class="thumb" aria-label="${it.n}번 사진 크게 보기"><img alt="" src="${it.thumbUrl}"><span class="num">${it.n}</span>${many ? `<span class="cnt">${it.photos.length}장</span>` : ''}</button>
       <div class="body">
         <textarea rows="3" placeholder="부품 이름 · 가격 · 상태"></textarea>
-        <div class="meta"><span>${when(it.createdAt)}</span><span class="saved">저장됐어요</span><button class="del">지우기</button></div>
+        <div class="meta"><button class="add">+ 사진</button><span class="saved">저장됐어요</span><button class="del">지우기</button></div>
       </div>`;
     const ta = el.querySelector('textarea'), saved = el.querySelector('.saved');
     ta.value = it.memo || '';
@@ -225,17 +241,26 @@ textarea:focus{background:color-mix(in srgb,var(--accent) 7%,transparent)}
       }, 350);
     });
     requestAnimationFrame(fit);
-    el.querySelector('.thumb').addEventListener('click', () => openViewer(it));
+    el.querySelector('.thumb').addEventListener('click', () => openViewer(it, 0));
+    el.querySelector('.add').addEventListener('click', () => { moreTarget = it; $('pickMore').click(); });
     el.querySelector('.del').addEventListener('click', async () => {
-      if (!confirm(`${it.n}번 사진과 메모를 지울까요?\n지우면 되돌릴 수 없어요.`)) return;
+      const what = it.photos.length > 1 ? `사진 ${it.photos.length}장과 메모를` : '사진과 메모를';
+      if (!confirm(`${it.n}번 부품의 ${what} 지울까요?\n지우면 되돌릴 수 없어요.`)) return;
       await remove(it.id);
       URL.revokeObjectURL(it.thumbUrl);
-      capCache.delete(it.id);
+      it.photos.forEach(p => capCache.delete(p.pid));
       items = items.filter(x => x.id !== it.id);
       el.remove(); renderCount(); renderEmpty();
     });
     return el;
   };
+  const refreshCard = it => {
+    const old = list.querySelector(`.card[data-id="${it.id}"]`);
+    const el = cardFor(it);
+    if (old) old.replaceWith(el); else list.prepend(el);
+    return el;
+  };
+  const flash = el => { el.classList.add('new'); setTimeout(() => el.classList.remove('new'), 1600); };
 
   const renderAll = () => {
     list.innerHTML = '';
@@ -243,58 +268,94 @@ textarea:focus{background:color-mix(in srgb,var(--accent) 7%,transparent)}
     renderCount(); renderEmpty();
   };
 
-  // ---------- 사진 추가 ----------
+  // ---------- 새 부품 · 사진 더하기 ----------
   const nextN = () => items.reduce((m, x) => Math.max(m, x.n), 0) + 1;
 
-  const addFiles = async files => {
-    files = [...files].filter(f => f.type.startsWith('image/') || !f.type);
+  $('pickCamera').addEventListener('change', async e => {
+    const files = [...e.target.files]; e.target.value = '';
     if (!files.length) return;
     if (!items.length) list.innerHTML = '';
-    let ok = 0;
-    for (let i = 0; i < files.length; i++) {
-      toast(files.length > 1 ? `사진 저장하는 중 ${i + 1}/${files.length}` : '사진 저장하는 중', 0);
-      try {
-        const im = await loadImg(files[i]);
-        const [full, thumb] = await Promise.all([shrink(im, 1600, .86), shrink(im, 360, .8)]);
-        const it = { id: uid(), n: nextN(), memo: '', createdAt: Date.now(), full: await full.arrayBuffer(), thumb: await thumb.arrayBuffer() };
-        await put(it);
-        items.push(it);
-        const el = cardFor(it);
-        list.prepend(el);
-        el.classList.add('new'); setTimeout(() => el.classList.remove('new'), 1600);
-        ok++;
-      } catch (e) {
-        console.error(e);
-        toast('사진을 저장하지 못했어요. 다시 찍어 주세요', 2600);
-      }
+    toast('사진 저장하는 중', 0);
+    try {
+      const it = { id: uid(), n: nextN(), memo: '', createdAt: Date.now(), photos: [] };
+      for (const f of files) it.photos.push(await makePhoto(f));
+      await put(it);
+      items.push(it);
+      const el = cardFor(it); list.prepend(el); flash(el);
+      renderCount();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      toast(`${it.n}번 부품을 저장했어요`);
+    } catch (err) {
+      console.error(err); toast('사진을 저장하지 못했어요. 다시 찍어 주세요', 2600);
     }
-    renderCount(); renderEmpty();
-    if (ok) { toast(`${items.length}번째 사진까지 저장했어요`); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  });
+
+  let moreTarget = null;
+  $('pickMore').addEventListener('change', async e => {
+    const files = [...e.target.files]; e.target.value = '';
+    const it = moreTarget; moreTarget = null;
+    if (!files.length || !it) return;
+    toast('사진 저장하는 중', 0);
+    try {
+      for (const f of files) it.photos.push(await makePhoto(f));
+      await put(it);
+      flash(refreshCard(it));
+      toast(`${it.n}번 부품 사진이 ${it.photos.length}장이 됐어요`);
+    } catch (err) {
+      console.error(err); toast('사진을 저장하지 못했어요. 다시 찍어 주세요', 2600);
+    }
+  });
+
+  // ---------- 크게 보기 (옆으로 넘기기) ----------
+  const vPic = $('vPic');
+  let vItem = null, vUrls = [], vIdx = 0;
+  const vTitle = () => {
+    const n = vItem.photos.length;
+    $('vTitle').textContent = n > 1 ? `${vItem.n}번 · ${vIdx + 1}/${n}장` : `${vItem.n}번`;
+    $('vDel').hidden = n < 2;
   };
-
-  $('pickCamera').addEventListener('change', e => { addFiles(e.target.files); e.target.value = ''; });
-
-  // ---------- 크게 보기 ----------
-  let vItem, vUrl;
-  const openViewer = it => {
-    vItem = it; vUrl = URL.createObjectURL(jpeg(it.full));
-    $('vImg').src = vUrl; $('vTitle').textContent = `${it.n}번`;
-    $('vMemo').textContent = it.memo || '';
+  const fillViewer = idx => {
+    vUrls.forEach(u => URL.revokeObjectURL(u));
+    vUrls = vItem.photos.map(p => URL.createObjectURL(jpeg(p.full)));
+    vPic.innerHTML = vUrls.map(u => `<div class="slide"><img alt="" src="${u}"></div>`).join('');
+    vIdx = Math.max(0, Math.min(idx, vItem.photos.length - 1));
+    vPic.scrollLeft = vIdx * vPic.clientWidth;
+    $('vMemo').textContent = vItem.memo || '';
+    vTitle();
+  };
+  const openViewer = (it, idx) => {
+    vItem = it;
     $('viewer').classList.add('on');
+    fillViewer(idx);
     history.pushState({ v: 1 }, '');
   };
-  const closeViewer = (fromPop) => {
+  const closeViewer = fromPop => {
     if (!$('viewer').classList.contains('on')) return;
-    $('viewer').classList.remove('on'); $('vImg').removeAttribute('src');
-    if (vUrl) URL.revokeObjectURL(vUrl); vUrl = null;
+    $('viewer').classList.remove('on'); vPic.innerHTML = '';
+    vUrls.forEach(u => URL.revokeObjectURL(u)); vUrls = [];
     if (!fromPop) history.back();
   };
+  vPic.addEventListener('scroll', () => {
+    const i = Math.round(vPic.scrollLeft / Math.max(1, vPic.clientWidth));
+    if (i !== vIdx) { vIdx = i; vTitle(); }
+  }, { passive: true });
+  vPic.addEventListener('click', () => closeViewer(false));
   $('vClose').addEventListener('click', () => closeViewer(false));
-  $('vPic').addEventListener('click', () => closeViewer(false));
-  $('vSave').addEventListener('click', async () => { download(await getCaptioned(vItem), fileName(vItem)); toast('사진을 저장했어요'); });
+  $('vSave').addEventListener('click', async () => {
+    download(await getCaptioned(vItem, vIdx), fileName(vItem, vIdx)); toast('사진을 저장했어요');
+  });
+  $('vDel').addEventListener('click', async () => {
+    if (!confirm(`${vItem.n}번 부품의 ${vIdx + 1}번째 사진을 지울까요?`)) return;
+    const [gone] = vItem.photos.splice(vIdx, 1);
+    capCache.delete(gone.pid);
+    await put(vItem);
+    refreshCard(vItem);
+    fillViewer(vIdx);
+    toast(`사진을 지웠어요 · ${vItem.photos.length}장 남았어요`);
+  });
 
   // ---------- 사진 아래에 번호·메모 새기기 (받는 사람이 사진만 봐도 무슨 부품인지 알게) ----------
-  const capCache = new Map(); // id -> { memo, blob }
+  const capCache = new Map(); // pid -> { key, blob }
   const wrap = (ctx, text, max) => {
     const out = [];
     const fits = s => ctx.measureText(s).width <= max;
@@ -314,66 +375,82 @@ textarea:focus{background:color-mix(in srgb,var(--accent) 7%,transparent)}
     }
     return out;
   };
-  const captioned = async it => {
-    const im = await loadImg(jpeg(it.full));
+  const captioned = async (it, k) => {
+    const im = await loadImg(jpeg(it.photos[k].full));
     const W = im.naturalWidth, H = im.naturalHeight;
-    const fs = Math.max(22, Math.round(W * 0.042)), pad = Math.round(fs * 0.8), lh = Math.round(fs * 1.4);
+    const fs = Math.max(22, Math.round(W * 0.042)), padPx = Math.round(fs * 0.8), lh = Math.round(fs * 1.4);
     const font = w => `${w} ${fs}px -apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif`;
     const c = document.createElement('canvas'), ctx = c.getContext('2d');
     ctx.font = font('500');
     const memo = (it.memo || '').trim();
-    const lines = memo ? wrap(ctx, memo, W - pad * 2).slice(0, 10) : [];
-    const textH = lh * (1 + lines.length);
-    c.width = W; c.height = H + pad * 2 + textH;
+    const lines = memo ? wrap(ctx, memo, W - padPx * 2).slice(0, 10) : [];
+    c.width = W; c.height = H + padPx * 2 + lh * (1 + lines.length);
     ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height);
     ctx.drawImage(im, 0, 0, W, H);
     ctx.textBaseline = 'top'; ctx.fillStyle = '#16161a';
-    let y = H + pad + Math.round((lh - fs) / 2);
-    ctx.font = font('800'); ctx.fillText(`${it.n}번`, pad, y); y += lh;
-    ctx.font = font('500'); lines.forEach(l => { ctx.fillText(l, pad, y); y += lh; });
+    let y = H + padPx + Math.round((lh - fs) / 2);
+    const total = it.photos.length;
+    ctx.font = font('800'); ctx.fillText(total > 1 ? `${it.n}번  ${k + 1}/${total}장` : `${it.n}번`, padPx, y); y += lh;
+    ctx.font = font('500'); lines.forEach(l => { ctx.fillText(l, padPx, y); y += lh; });
     return new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('encode')), 'image/jpeg', .88));
   };
-  const getCaptioned = async it => {
-    const c = capCache.get(it.id);
-    if (c && c.memo === it.memo) return c.blob;
-    const blob = await captioned(it);
-    capCache.set(it.id, { memo: it.memo, blob });
+  const getCaptioned = async (it, k) => {
+    const p = it.photos[k], key = `${it.n}|${it.memo}|${k}|${it.photos.length}`;
+    const c = capCache.get(p.pid);
+    if (c && c.key === key) return c.blob;
+    const blob = await captioned(it, k);
+    capCache.set(p.pid, { key, blob });
     return blob;
   };
 
-  // ---------- 내보내기 시트 ----------
+  // ---------- 보내기 시트 ----------
   const sheet = $('sheet'), shade = $('shade');
   const openSheet = () => { sheet.classList.add('on'); shade.classList.add('on'); history.pushState({ s: 1 }, ''); };
-  const closeSheet = (fromPop) => {
+  const closeSheet = fromPop => {
     if (!sheet.classList.contains('on')) return;
     sheet.classList.remove('on'); shade.classList.remove('on');
     if (!fromPop) history.back();
   };
+  shade.addEventListener('click', () => closeSheet(false));
+  window.addEventListener('popstate', () => { closeViewer(true); closeSheet(true); });
+
+  const download = (blob, name) => {
+    const a = document.createElement('a'), u = URL.createObjectURL(blob);
+    a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(u), 4000);
+  };
+  const photoTotal = () => items.reduce((s, it) => s + it.photos.length, 0);
+
   // 공유는 «누른 직후» 에만 허락돼서, 시트를 열 때 미리 만들어 둔다
   const BATCH = 20;
   let prepared = null, step = 0;
   const prepare = () => (prepared = (async () => {
     const out = [];
-    for (const it of ordered()) out.push(new File([await getCaptioned(it)], fileName(it), { type: 'image/jpeg' }));
+    for (const it of ordered())
+      for (let k = 0; k < it.photos.length; k++)
+        out.push(new File([await getCaptioned(it, k)], fileName(it, k), { type: 'image/jpeg' }));
     return out;
   })());
-  // 보내는 순서: 사진 20장씩 → 마지막에 번호별 메모 글
+  // 보내는 순서: 사진을 부품 단위로 20장 안쪽씩 → 마지막에 번호별 메모 글
   const steps = () => {
-    const s = [];
-    for (let i = 0; i < items.length; i += BATCH) s.push({ from: i, to: Math.min(items.length, i + BATCH) });
+    const s = []; let cur = null, fi = 0;
+    for (const it of ordered()) {
+      const c = it.photos.length;
+      if (!cur || cur.count + c > BATCH) { cur = { from: fi, to: fi, count: 0, nFrom: it.n, nTo: it.n }; s.push(cur); }
+      cur.count += c; cur.to = fi + c; cur.nTo = it.n; fi += c;
+    }
     s.push({ text: true });
     return s;
   };
   const curStep = () => { const s = steps(); if (step >= s.length) step = 0; return [s[step], s.length]; };
-  const updateShareLabel = (busy) => {
+  const updateShareLabel = busy => {
     const [st, n] = curStep();
-    const label = busy ? '보낼 사진 만드는 중…'
-      : st.text ? '메모 글 보내기'
-      : items.length > BATCH ? `사진 보내기 (${st.from + 1}~${st.to}번)` : '사진 보내기';
+    const range = st.text ? '' : st.nFrom === st.nTo ? ` (${st.nFrom}번)` : ` (${st.nFrom}~${st.nTo}번)`;
+    const label = busy ? '보낼 사진 만드는 중…' : st.text ? '메모 글 보내기' : `사진 보내기${n > 2 ? range : ''}`;
     $('shareLabel').textContent = n > 2 && !busy ? `${step + 1}/${n} ${label}` : label;
     $('shareSub').textContent = st.text
       ? '번호별 메모를 글로 보내요 · 마지막 단계예요'
-      : '보내고 나면 다음 차례가 여기 이어서 떠요';
+      : `사진 ${st.count}장 · 보내고 나면 다음 차례가 여기 떠요`;
     $('shareAll').disabled = !!busy; $('shareAll').style.opacity = busy ? .5 : 1;
   };
   $('openSheet').addEventListener('click', async () => {
@@ -383,15 +460,6 @@ textarea:focus{background:color-mix(in srgb,var(--accent) 7%,transparent)}
     try { await prepare(); } catch (e) { console.error(e); }
     updateShareLabel(false);
   });
-  shade.addEventListener('click', () => closeSheet(false));
-  window.addEventListener('popstate', () => { closeViewer(true); closeSheet(true); });
-
-  const download = (blob, name) => {
-    const a = document.createElement('a'), u = URL.createObjectURL(blob);
-    a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(u), 4000);
-  };
-  const ordered = () => [...items].sort((a, b) => a.n - b.n);
 
   $('saveAll').addEventListener('click', async () => {
     closeSheet(false);
@@ -405,7 +473,10 @@ textarea:focus{background:color-mix(in srgb,var(--accent) 7%,transparent)}
     toast(`사진 ${files.length}장을 저장했어요 · 갤러리에서 보낼 수 있어요`, 3200);
   });
 
-  const memoText = () => ordered().map(it => `${it.n}. ${(it.memo || '(메모 없음)').trim()}`).join('\n\n');
+  const memoText = () => ordered().map(it => {
+    const memo = (it.memo || '(메모 없음)').trim();
+    return `${it.n}. ${memo}${it.photos.length > 1 ? ` [사진 ${it.photos.length}장]` : ''}`;
+  }).join('\n\n');
   $('copyAll').addEventListener('click', async () => {
     const text = memoText();
     try { await navigator.clipboard.writeText(text); }
@@ -431,10 +502,10 @@ textarea:focus{background:color-mix(in srgb,var(--accent) 7%,transparent)}
       step++;
       if (step < n) {
         updateShareLabel(false);
-        toast(st.text ? '메모 글을 보냈어요' : `${st.from + 1}~${st.to}번 사진을 보냈어요 · 다음 차례를 눌러 주세요`, 3200);
+        toast(st.text ? '메모 글을 보냈어요' : `사진 ${st.count}장을 보냈어요 · 다음 차례를 눌러 주세요`, 3200);
       } else {
         step = 0; closeSheet(false);
-        toast(`사진 ${items.length}장과 메모를 다 보냈어요`, 2800);
+        toast(`사진 ${photoTotal()}장과 메모를 다 보냈어요`, 2800);
       }
     } catch (err) {
       if (err && err.name !== 'AbortError') toast('보내지 못했어요 · «사진 전부 폰에 저장하기»로 저장한 뒤 갤러리에서 보내 주세요', 3600);
@@ -442,7 +513,7 @@ textarea:focus{background:color-mix(in srgb,var(--accent) 7%,transparent)}
   });
 
   $('wipe').addEventListener('click', async () => {
-    if (!confirm(`사진 ${items.length}장과 메모가 이 폰에서 모두 사라져요.\n전부 지울까요?`)) return;
+    if (!confirm(`부품 ${items.length}개(사진 ${photoTotal()}장)와 메모가 이 폰에서 모두 사라져요.\n전부 지울까요?`)) return;
     await clearAll();
     items.forEach(it => it.thumbUrl && URL.revokeObjectURL(it.thumbUrl));
     capCache.clear(); prepared = null; step = 0;
@@ -453,7 +524,7 @@ textarea:focus{background:color-mix(in srgb,var(--accent) 7%,transparent)}
   (async () => {
     try {
       db = await openDB();
-      items = await getAll();
+      items = (await getAll()).map(upgrade);
     } catch (e) {
       console.error(e);
       list.innerHTML = `<div class="empty"><div class="big">⚠️</div><p>이 브라우저에서는 저장할 수 없어요</p><span>크롬이나 사파리로 열어 주세요</span></div>`;
